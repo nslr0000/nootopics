@@ -1,0 +1,33 @@
+name: Publish NooTopics
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/configure-pages@v5
+      - name: Extract original archive
+        run: |
+          mkdir -p _site
+          unzip -q NooTopics_GitHub_Pages.zip -d _site
+          test -f _site/index.html
+          test -f _site/data/site.json
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+      - name: Publish website
+        id: deployment
+        uses: actions/deploy-pages@v4
